@@ -1,6 +1,6 @@
 package ev.koslov.remote_control.server.components;
 
-public class ServerConnectionAttachment {
+public class AgentConnectionAttachment {
     private long connectionId;
     private String hostName;
     private String hostIP;
