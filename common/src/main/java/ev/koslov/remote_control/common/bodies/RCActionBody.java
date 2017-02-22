@@ -10,8 +10,8 @@ public class RCActionBody extends RequestBody<RemoteControlTaglib> {
 
     private List<RCAction> actions;
 
-    public RCActionBody(RemoteControlTaglib requestCommand, List<RCAction> actions) {
-        super(requestCommand);
+    public RCActionBody(List<RCAction> actions) {
+        super(RemoteControlTaglib.DO_INPUT);
         this.actions = actions;
     }
 
