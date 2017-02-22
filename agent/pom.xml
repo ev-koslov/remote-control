@@ -12,4 +12,12 @@
     <artifactId>agent</artifactId>
 
 
+    <dependencies>
+        <dependency>
+            <groupId>ev.koslov.remote-control</groupId>
+            <artifactId>common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
 </project>

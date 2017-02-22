@@ -27,6 +27,24 @@ public class AgentInfo implements Serializable {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (!obj.getClass().equals(this.getClass())){
+            return false;
+        }
+
+        AgentInfo temp = (AgentInfo) obj;
+
+        if (temp.agentId != agentId)
+            return false;
+
+        return true;
+    }
+
+    @Override
     public String toString() {
         return hostName;
     }

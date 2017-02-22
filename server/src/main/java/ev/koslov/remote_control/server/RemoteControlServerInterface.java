@@ -50,21 +50,26 @@ public class RemoteControlServerInterface extends ServerInterface {
 
     /**
      * Gets data from cient request and attaches client info to connection
-     * @param header request header
+     *
+     * @param header      request header
      * @param requestBody body with data
      */
     private void initializeAgent(Message.Header header, RequestBody requestBody) {
-        AgentConnectionAttachment attachment = new AgentConnectionAttachment();
+        ServerConnection associatedConnection = getAssociatedEndpoint().getConnection(header.getSourceId());
 
-        attachment.setConnectionId(header.getSourceId());
-        attachment.setHostName((String) requestBody.getProperty("hostName"));
-        attachment.setHostIP((String) requestBody.getProperty("hostIP"));
+        if (associatedConnection != null) {
+            AgentConnectionAttachment attachment = new AgentConnectionAttachment();
+            attachment.setConnectionId(header.getSourceId());
+            attachment.setHostName((String) requestBody.getProperty("hostName"));
+            attachment.setHostIP((String) requestBody.getProperty("hostIP"));
 
-        getAssociatedEndpoint().getConnection(header.getSourceId()).attach(attachment);
+            associatedConnection.attach(attachment);
+        }
     }
 
     /**
      * Creates list of connected agents and send it to remote client
+     *
      * @param header request header
      * @throws IOException
      */

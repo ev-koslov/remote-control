@@ -14,10 +14,11 @@ import java.io.IOException;
 import java.util.List;
 
 public class RemoteControlClientInterface extends ClientInterfaceAutoSorting {
+
     public List<AgentInfo> getAvailableAgents() throws IOException, InterruptedException {
         RequestBody<ServerTaglib> requestBody = new RequestBody<ServerTaglib>(ServerTaglib.GET_AGENT_CONNECTIONS);
         ResponseBody responseBody = clientToServerRequest(requestBody, 10000);
-        List<AgentInfo> agentInfos = responseBody.getProperty("agentsList");
+        List<AgentInfo> agentInfos = responseBody.getProperty("agentConnections");
         return agentInfos;
     }
 
