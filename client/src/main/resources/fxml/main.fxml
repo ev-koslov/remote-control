@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.Pane?>
+
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="439.0" prefWidth="260.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ev.koslov.remote_control.client.gui.MainWindowController">
+   <children>
+      <ListView fx:id="agentsList" focusTraversable="false" layoutX="10.0" layoutY="44.0" onMouseClicked="#redrawInterface" prefHeight="340.0" prefWidth="240.0" />
+      <Button fx:id="connect" focusTraversable="false" layoutX="10.0" layoutY="393.0" mnemonicParsing="false" onAction="#connectToAgent" prefHeight="32.0" prefWidth="115.0" text="Подключиться" />
+      <Button fx:id="update" focusTraversable="false" layoutX="135.0" layoutY="393.0" mnemonicParsing="false" onAction="#updateConnectedAgents" prefHeight="32.0" prefWidth="115.0" text="Обновить" />
+      <ImageView fx:id="connectionStatus" fitHeight="32.0" fitWidth="32.0" layoutX="218.0" layoutY="7.0" pickOnBounds="true" preserveRatio="true" />
+   </children>
+</Pane>
