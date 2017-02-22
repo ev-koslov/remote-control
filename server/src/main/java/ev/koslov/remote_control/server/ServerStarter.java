@@ -12,6 +12,7 @@ public class ServerStarter {
 
         int port = Integer.parseInt(args[0]);
 
+        //initialization of server interface and starting server
         RemoteControlServerInterface remoteControlServerInterface = new RemoteControlServerInterface();
         Server server = remoteControlServerInterface.startServer(port);
     }
