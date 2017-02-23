@@ -6,17 +6,17 @@ import ev.koslov.remote_control.common.actions.*;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.util.*;
-import java.util.List;
 
 
 /**
  * Created by voron on 29.06.2016.
  */
 public class Clicker {
-    private final static HashSet<Integer> pressedButtons;
+    private final static HashSet<Integer> pressedButtons, pressedMouseButtons;
 
     static {
         pressedButtons = new HashSet<Integer>();
+        pressedMouseButtons = new HashSet<Integer>();
     }
 
     private Robot robot;
@@ -31,24 +31,18 @@ public class Clicker {
         }
     }
 
-    public synchronized void doActions(List<RCAction> actions) {
-        for (RCAction action : actions) {
-            if (action.getClass().equals(MouseMove.class)) {
-                makeMouseMove((MouseMove) action);
-                continue;
-            }
-            if (action.getClass().equals(MousePress.class)) {
-                makeMouseClick((MousePress) action);
-                continue;
-            }
-            if (action.getClass().equals(MouseScroll.class)) {
-                makeMouseScroll((MouseScroll) action);
-                continue;
-            }
-            if (action.getClass().equals(KeyboardKeyPress.class)) {
-                makeKeyPress((KeyboardKeyPress) action);
-                continue;
-            }
+    public synchronized void doAction(RCAction action) {
+        if (action instanceof MouseMove || action instanceof MouseDrag) {
+            makeMouseMove((MouseMove) action);
+        }
+        if (action instanceof MousePress) {
+            makeMouseClick((MousePress) action);
+        }
+        if (action instanceof MouseScroll) {
+            makeMouseScroll((MouseScroll) action);
+        }
+        if (action instanceof KeyboardKeyPress) {
+            makeKeyPress((KeyboardKeyPress) action);
         }
     }
 
@@ -67,8 +61,10 @@ public class Clicker {
 
         //make click
         if (mousePress.isPress) {
+            pressedMouseButtons.add(buttonMask);
             robot.mousePress(buttonMask);
         } else {
+            pressedMouseButtons.remove(buttonMask);
             robot.mouseRelease(buttonMask);
         }
     }
@@ -85,9 +81,11 @@ public class Clicker {
     }
 
     private void makeKeyPress(KeyboardKeyPress keyPress) {
-        if (keyPress.isPress){
+        if (keyPress.isPress) {
+            pressedButtons.add(keyPress.kbKey);
             robot.keyPress(keyPress.kbKey);
         } else {
+            pressedButtons.remove(keyPress.kbKey);
             robot.keyRelease(keyPress.kbKey);
         }
     }
@@ -109,5 +107,25 @@ public class Clicker {
             }
         }
         return button;
+    }
+
+    public void stop(){
+        for (Integer i : pressedButtons){
+            try {
+                robot.keyRelease(i);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        for (Integer i : pressedMouseButtons){
+            try {
+                robot.mouseRelease(i);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+
+        pressedButtons.clear();
+        pressedMouseButtons.clear();
     }
 }

@@ -33,7 +33,7 @@ public class ClientApplication extends Application {
         pair.getController().init(remoteControlClientInterface);
 
         executorService.scheduleWithFixedDelay(
-                new ConnectionKeeper("localhost", 5555, remoteControlClientInterface),
+                new ConnectionKeeper("sysadmin", 5555, remoteControlClientInterface),
                 0,
                 1,
                 TimeUnit.SECONDS

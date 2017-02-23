@@ -51,6 +51,7 @@ public class RemoteControlController {
     @FXML
     public void startRemoteControl() {
         remoteScreen.addEventHandler(MouseEvent.MOUSE_MOVED, mouseEventHandler);
+        remoteScreen.addEventHandler(MouseEvent.MOUSE_DRAGGED, mouseEventHandler);
         remoteScreen.addEventHandler(MouseEvent.MOUSE_PRESSED, mouseEventHandler);
         remoteScreen.addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEventHandler);
         remoteScreen.addEventHandler(ScrollEvent.SCROLL, scrollEventHandler);
@@ -62,6 +63,7 @@ public class RemoteControlController {
     @FXML
     public void stopRemoteControl() {
         remoteScreen.removeEventHandler(MouseEvent.MOUSE_MOVED, mouseEventHandler);
+        remoteScreen.removeEventHandler(MouseEvent.MOUSE_DRAGGED, mouseEventHandler);
         remoteScreen.removeEventHandler(MouseEvent.MOUSE_PRESSED, mouseEventHandler);
         remoteScreen.removeEventHandler(MouseEvent.MOUSE_RELEASED, mouseEventHandler);
         remoteScreen.removeEventHandler(ScrollEvent.SCROLL, scrollEventHandler);
@@ -154,6 +156,8 @@ public class RemoteControlController {
 
             showingImage = SwingFXUtils.toFXImage(image, null);
             tempImage = new WritableImage(currentScreenW, currentScreenH);
+
+            tempImage.getPixelWriter().setPixels(0, 0, currentScreenW, currentScreenH, showingImage.getPixelReader(), 0, 0);
 
             Dimension scrDims = Toolkit.getDefaultToolkit().getScreenSize();
 
@@ -258,9 +262,12 @@ public class RemoteControlController {
             int xPos = (int) (mouseEvent.getX() * frameCrop);
             int yPos = (int) (mouseEvent.getY() * frameCrop);
 
-            if (mouseEvent.getEventType().equals(MouseEvent.MOUSE_MOVED) ||
-                    mouseEvent.getEventType().equals(MouseEvent.MOUSE_DRAGGED)) {
+            if (mouseEvent.getEventType().equals(MouseEvent.MOUSE_MOVED)) {
                 pendingEvents.addLast(new MouseMove(xPos, yPos));
+            }
+
+            if (mouseEvent.getEventType().equals(MouseEvent.MOUSE_DRAGGED)) {
+                pendingEvents.addLast(new MouseDrag(xPos, yPos));
             }
 
             if (mouseEvent.getEventType().equals(MouseEvent.MOUSE_PRESSED)) {
@@ -285,7 +292,24 @@ public class RemoteControlController {
             }
 
             if (mouseEvent.getEventType().equals(MouseEvent.MOUSE_RELEASED)) {
-                pendingEvents.addLast(new MousePress(xPos, yPos, (byte) mouseEvent.getButton().ordinal(), false));
+                byte mouseButton = -1;
+
+                switch (mouseEvent.getButton()) {
+                    case PRIMARY: {
+                        mouseButton = 0;
+                        break;
+                    }
+                    case MIDDLE: {
+                        mouseButton = 1;
+                        break;
+                    }
+                    case SECONDARY: {
+                        mouseButton = 2;
+                        break;
+                    }
+                }
+
+                pendingEvents.addLast(new MousePress(xPos, yPos, mouseButton, false));
             }
         }
     }

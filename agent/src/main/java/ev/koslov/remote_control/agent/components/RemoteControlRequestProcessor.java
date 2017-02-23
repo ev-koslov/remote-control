@@ -4,12 +4,15 @@ import ev.koslov.data_exchanging.components.Message;
 import ev.koslov.data_exchanging.components.RequestBody;
 import ev.koslov.data_exchanging.module.AbstractClientRequestProcessor;
 import ev.koslov.remote_control.agent.AgentRemoteControlInterface;
+import ev.koslov.remote_control.common.actions.RCAction;
 import ev.koslov.remote_control.common.bodies.FrameBody;
 import ev.koslov.remote_control.common.bodies.RCActionBody;
 import ev.koslov.remote_control.common.taglib.RemoteControlTaglib;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.*;
+import java.util.List;
 
 /**
  * Created by voron on 23.02.2017.
@@ -33,8 +36,19 @@ public class RemoteControlRequestProcessor extends AbstractClientRequestProcesso
     }
 
     @Override
-    protected void process(Message.Header requestHeader, RequestBody<RemoteControlTaglib> body) {
+    protected synchronized void process(Message.Header requestHeader, RequestBody<RemoteControlTaglib> body) {
         switch (body.getCommand()){
+
+            case START_RC: {
+                
+                break;
+            }
+
+            case STOP_RC: {
+                clicker.stop();
+                break;
+            }
+
             case GET_FRAME: {
                 try {
                     FrameBody frameBody = new FrameBody(streamer.getScreenW(), streamer.getScreenH(), streamer.nextFrame());
@@ -46,7 +60,15 @@ public class RemoteControlRequestProcessor extends AbstractClientRequestProcesso
             }
             case DO_INPUT: {
                 RCActionBody actionBody = (RCActionBody) body;
-                clicker.doActions(actionBody.getActions());
+                List<RCAction> actions = actionBody.getActions();
+
+                for (RCAction action : actions) {
+                    try {
+                        clicker.doAction(action);
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
             }
         }
     }
