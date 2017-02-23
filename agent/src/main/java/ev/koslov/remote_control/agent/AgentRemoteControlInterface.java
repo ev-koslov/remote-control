@@ -3,6 +3,7 @@ package ev.koslov.remote_control.agent;
 import ev.koslov.data_exchanging.components.RequestBody;
 import ev.koslov.data_exchanging.module.Client;
 import ev.koslov.data_exchanging.module.ClientInterfaceAutoSorting;
+import ev.koslov.remote_control.agent.components.FrameGrabber;
 import ev.koslov.remote_control.common.taglib.ServerTaglib;
 
 import java.io.IOException;
@@ -24,6 +25,8 @@ public class AgentRemoteControlInterface extends ClientInterfaceAutoSorting{
         requestBody.setProperty("hostIP", inetAddress.getHostAddress());
 
         clientToServerRequest(requestBody);
+
+        this.addRequestProcessor(new FrameGrabber());
 
         return client;
     }
