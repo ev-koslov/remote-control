@@ -22,6 +22,18 @@ public class RemoteControlClientInterface extends ClientInterfaceAutoSorting {
         return agentInfos;
     }
 
+    public void initConnectionToAgent(long agentId) throws IOException, InterruptedException {
+        RequestBody<ServerTaglib> requestBody = new RequestBody<ServerTaglib>(ServerTaglib.CONNECT);
+        requestBody.setProperty("agentId", agentId);
+        clientToServerRequest(requestBody, 5000);
+    }
+
+    public void disconnectFromAgent(long agentId) throws IOException {
+        RequestBody<ServerTaglib> requestBody = new RequestBody<ServerTaglib>(ServerTaglib.DISCONNECT);
+        requestBody.setProperty("agentId", agentId);
+        clientToServerRequest(requestBody);
+    }
+
     public FrameBody getRemoteFrame(long agentId) throws IOException, InterruptedException {
         RequestBody<RemoteControlTaglib> requestBody = new RequestBody<RemoteControlTaglib>(RemoteControlTaglib.GET_FRAME);
         FrameBody responseBody = (FrameBody) clientToClientRequest(agentId, requestBody, 10000);

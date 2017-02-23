@@ -5,9 +5,11 @@ package ev.koslov.remote_control.common.actions;
  */
 public class KeyboardKeyPress extends RCAction {
     public int kbKey;
+    public boolean isPress;
 
-    public KeyboardKeyPress(int kbKey, boolean[] modifiers) {
-        super(modifiers);
+    public KeyboardKeyPress(int kbKey, boolean isPress) {
+        super();
         this.kbKey = kbKey;
+        this.isPress = isPress;
     }
 }

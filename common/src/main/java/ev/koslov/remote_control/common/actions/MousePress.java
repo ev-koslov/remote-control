@@ -8,8 +8,8 @@ public class MousePress extends MouseMove {
 
     public boolean isPress;
 
-    public MousePress(int mouseX, int mouseY, byte mouseButton, boolean isPress, boolean[] modifiers) {
-        super(mouseX, mouseY, modifiers);
+    public MousePress(int mouseX, int mouseY, byte mouseButton, boolean isPress) {
+        super(mouseX, mouseY);
         this.button = mouseButton;
         this.isPress = isPress;
     }

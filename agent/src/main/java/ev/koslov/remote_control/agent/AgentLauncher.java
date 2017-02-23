@@ -8,6 +8,6 @@ import java.io.IOException;
 public class AgentLauncher {
     public static void main(String[] args) throws IOException {
         AgentRemoteControlInterface agentRemoteControlInterface = new AgentRemoteControlInterface();
-        agentRemoteControlInterface.connect("localhost", 5555);
+        agentRemoteControlInterface.connect("sysadmin", 5555);
     }
 }

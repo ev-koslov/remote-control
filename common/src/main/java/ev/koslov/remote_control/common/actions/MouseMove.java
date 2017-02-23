@@ -6,8 +6,8 @@ package ev.koslov.remote_control.common.actions;
 public class MouseMove extends RCAction {
     public int x, y;
 
-    public MouseMove(int mouseX, int mouseY, boolean[] modifiers) {
-        super(modifiers);
+    public MouseMove(int mouseX, int mouseY) {
+        super();
         x = mouseX;
         y = mouseY;
     }
