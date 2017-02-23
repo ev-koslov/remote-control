@@ -169,6 +169,8 @@ public class RemoteControlController {
             remoteScreen.setFitHeight(windowHeight - 60);
             remoteScreen.setFitWidth(windowHeight / currentScreenAspectRatio - 20);
 
+            frameCrop = showingImage.getHeight() / remoteScreen.getBoundsInLocal().getHeight();
+
             Platform.runLater(new Runnable() {
                 public void run() {
                     remoteScreen.setImage(showingImage);

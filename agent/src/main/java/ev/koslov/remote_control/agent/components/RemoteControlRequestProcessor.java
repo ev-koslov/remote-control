@@ -5,6 +5,7 @@ import ev.koslov.data_exchanging.components.RequestBody;
 import ev.koslov.data_exchanging.module.AbstractClientRequestProcessor;
 import ev.koslov.remote_control.agent.AgentRemoteControlInterface;
 import ev.koslov.remote_control.common.bodies.FrameBody;
+import ev.koslov.remote_control.common.bodies.RCActionBody;
 import ev.koslov.remote_control.common.taglib.RemoteControlTaglib;
 
 import java.awt.*;
@@ -13,12 +14,14 @@ import java.io.IOException;
 /**
  * Created by voron on 23.02.2017.
  */
-public class FrameGrabber extends AbstractClientRequestProcessor<RemoteControlTaglib, AgentRemoteControlInterface> {
-    Streamer streamer;
+public class RemoteControlRequestProcessor extends AbstractClientRequestProcessor<RemoteControlTaglib, AgentRemoteControlInterface> {
+    private Streamer streamer;
+    private Clicker clicker;
 
     {
         try {
             streamer = new Streamer();
+            clicker = new Clicker();
         } catch (AWTException e) {
             e.printStackTrace();
         }
@@ -39,6 +42,11 @@ public class FrameGrabber extends AbstractClientRequestProcessor<RemoteControlTa
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                break;
+            }
+            case DO_INPUT: {
+                RCActionBody actionBody = (RCActionBody) body;
+                clicker.doActions(actionBody.getActions());
             }
         }
     }
