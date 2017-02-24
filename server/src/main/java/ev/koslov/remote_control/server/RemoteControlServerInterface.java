@@ -3,9 +3,11 @@ package ev.koslov.remote_control.server;
 import ev.koslov.data_exchanging.components.Message;
 import ev.koslov.data_exchanging.components.RequestBody;
 import ev.koslov.data_exchanging.components.ResponseBody;
+import ev.koslov.data_exchanging.components.tags.StatusTag;
 import ev.koslov.data_exchanging.module.ServerConnection;
 import ev.koslov.data_exchanging.module.ServerInterface;
 import ev.koslov.remote_control.common.dto.AgentInfo;
+import ev.koslov.remote_control.common.taglib.RemoteControlTaglib;
 import ev.koslov.remote_control.common.taglib.ServerTaglib;
 import ev.koslov.remote_control.server.components.AgentConnectionAttachment;
 
@@ -32,6 +34,15 @@ public class RemoteControlServerInterface extends ServerInterface {
                     break;
                 }
 
+                case CONNECT: {
+                    initializeRemoteConnectionToAgent(request.getHeader(), requestBody);
+                    break;
+                }
+
+                case DISCONNECT: {
+                    closeRemoteConnectionToAgent(request.getHeader(), requestBody);
+                    break;
+                }
 
             }
         } catch (IOException e) {
@@ -45,6 +56,46 @@ public class RemoteControlServerInterface extends ServerInterface {
             forward(message);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void initializeRemoteConnectionToAgent(Message.Header header, RequestBody requestBody) {
+        long targetAgentId = requestBody.getProperty("agentId");
+        try {
+            RequestBody agentRequestBody =  new RequestBody(RemoteControlTaglib.START_RC);
+            agentRequestBody.setProperty("clientId", header.getSourceId());
+            serverToClientRequest(targetAgentId, agentRequestBody, 5000);
+
+        } catch (Exception e) {
+            try {
+                response(header, StatusTag.ERROR, "Request ERROR:"+e.getMessage());
+            } catch (IOException e1) {
+
+            }
+            return;
+        }
+
+        try {
+            response(header, new ResponseBody());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void closeRemoteConnectionToAgent(Message.Header header, RequestBody requestBody) {
+        long targetAgentId = requestBody.getProperty("agentId");
+        try {
+
+            RequestBody agentRequestBody =  new RequestBody(RemoteControlTaglib.STOP_RC);
+            agentRequestBody.setProperty("clientId", header.getSourceId());
+            serverToClientRequest(targetAgentId, agentRequestBody, 5000);
+
+        } catch (Exception e) {
+            try {
+                response(header, StatusTag.ERROR, "Request ERROR"+e.getMessage());
+            } catch (IOException e1) {
+
+            }
         }
     }
 
