@@ -2,6 +2,7 @@ package ev.koslov.remote_control.client.gui;
 
 import ev.koslov.remote_control.client.ClientApplication;
 import ev.koslov.remote_control.client.RemoteControlClientInterface;
+import ev.koslov.remote_control.client.components.RemoteAgentConnection;
 import ev.koslov.remote_control.common.dto.AgentInfo;
 import ev.koslov.remote_control.common.gui.FXUtils;
 import ev.koslov.remote_control.common.gui.SceneControllerPair;
@@ -12,7 +13,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -20,9 +20,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class MainWindowController {
-
     private RemoteControlClientInterface remoteControlClientInterface;
-    private Stage remoteControlStage;
 
     @FXML
     private ListView<AgentInfo> agentsList;
@@ -40,8 +38,6 @@ public class MainWindowController {
 
     public void init(RemoteControlClientInterface remoteControlClientInterface) {
         this.remoteControlClientInterface = remoteControlClientInterface;
-
-        remoteControlStage = new Stage();
 
         okIcon = new Image("/icons/ok.png");
         errorIcon = new Image("/icons/error.png");
@@ -62,14 +58,21 @@ public class MainWindowController {
     }
 
     @FXML
-    void connectToAgent(ActionEvent event) throws IOException {
+    void connectToAgent() throws IOException, InterruptedException {
+
+        AgentInfo requestAgentInfo = agentsList.getSelectionModel().getSelectedItem();
+
+        RemoteAgentConnection connection = remoteControlClientInterface.initConnectionToAgent(requestAgentInfo.getAgentId());
         SceneControllerPair<RemoteControlController> pair = FXUtils.loadPair("/fxml/remote_control.fxml");
 
-        remoteControlStage.setScene(pair.getScene());
+        Stage stage = new Stage();
+        stage.setScene(pair.getScene());
 
-        pair.getController().init(agentsList.getSelectionModel().getSelectedItem().getAgentId(), remoteControlClientInterface);
+        stage.setTitle(requestAgentInfo.getHostName());
 
-        remoteControlStage.show();
+        pair.getController().init(connection);
+
+        stage.show();
 
     }
 

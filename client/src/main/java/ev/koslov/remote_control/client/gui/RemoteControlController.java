@@ -1,17 +1,15 @@
 package ev.koslov.remote_control.client.gui;
 
-import ev.koslov.data_exchanging.components.RequestBody;
 import ev.koslov.remote_control.client.ClientApplication;
-import ev.koslov.remote_control.client.RemoteControlClientInterface;
+import ev.koslov.remote_control.client.components.RemoteAgentConnection;
 import ev.koslov.remote_control.common.actions.*;
 import ev.koslov.remote_control.common.bodies.FrameBody;
-import ev.koslov.remote_control.common.bodies.RCActionBody;
-import ev.koslov.remote_control.common.taglib.RemoteControlTaglib;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.image.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -28,18 +26,20 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 
-/**
- * Created by voron on 22.02.2017.
- */
+
 public class RemoteControlController {
-    private RemoteControlClientInterface anInterface;
-    private long remoteAgentId;
+
+    private Image remoteCursor;
+
+    private RemoteAgentConnection connection;
 
     private LinkedList<RCAction> pendingEvents;
 
     private Future remoteImageUpdateWorkerTask, remoteControlWorkerTask;
 
-    private EventHandler mouseEventHandler, keyboardEventHandler, scrollEventHandler;
+    private MouseEventHandler mouseEventHandler;
+    private KeyboardEventHandler keyboardEventHandler;
+    private ScrollEventHandler scrollEventHandler;
 
     @FXML
     private ImageView remoteScreen;
@@ -52,6 +52,7 @@ public class RemoteControlController {
     public void startRemoteControl() {
         remoteScreen.addEventHandler(MouseEvent.MOUSE_MOVED, mouseEventHandler);
         remoteScreen.addEventHandler(MouseEvent.MOUSE_DRAGGED, mouseEventHandler);
+        remoteScreen.addEventHandler(MouseEvent.DRAG_DETECTED, mouseEventHandler);
         remoteScreen.addEventHandler(MouseEvent.MOUSE_PRESSED, mouseEventHandler);
         remoteScreen.addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEventHandler);
         remoteScreen.addEventHandler(ScrollEvent.SCROLL, scrollEventHandler);
@@ -64,6 +65,7 @@ public class RemoteControlController {
     public void stopRemoteControl() {
         remoteScreen.removeEventHandler(MouseEvent.MOUSE_MOVED, mouseEventHandler);
         remoteScreen.removeEventHandler(MouseEvent.MOUSE_DRAGGED, mouseEventHandler);
+        remoteScreen.removeEventHandler(MouseEvent.DRAG_DETECTED, mouseEventHandler);
         remoteScreen.removeEventHandler(MouseEvent.MOUSE_PRESSED, mouseEventHandler);
         remoteScreen.removeEventHandler(MouseEvent.MOUSE_RELEASED, mouseEventHandler);
         remoteScreen.removeEventHandler(ScrollEvent.SCROLL, scrollEventHandler);
@@ -72,9 +74,11 @@ public class RemoteControlController {
         stage.removeEventFilter(KeyEvent.KEY_RELEASED, keyboardEventHandler);
     }
 
-    public void init(long remoteAgentId, RemoteControlClientInterface anInterface) {
-        this.anInterface = anInterface;
-        this.remoteAgentId = remoteAgentId;
+    public void init(RemoteAgentConnection connection) {
+        this.remoteCursor = new Image("/icons/cursor.png");
+
+        this.connection = connection;
+
         this.pendingEvents = new LinkedList<RCAction>();
 
         this.mouseEventHandler = new MouseEventHandler();
@@ -111,16 +115,14 @@ public class RemoteControlController {
     private void closeConnection() {
         remoteImageUpdateWorkerTask.cancel(true);
         remoteControlWorkerTask.cancel(true);
-        try {
-            anInterface.disconnectFromAgent(remoteAgentId);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        connection.disconnect();
+
         System.gc();
     }
 
     private class RemoteImageUpdaterWorker implements Runnable {
-        private static final int TRANSPARENT_MASK = (0 << 24) | (0 << 16) | (0 << 8) | 0;
+        private static final int TRANSPARENT_MASK = 0;
         private int currentScreenW, currentScreenH;
         private WritableImage showingImage, tempImage;
         private int frameCounter;
@@ -128,8 +130,8 @@ public class RemoteControlController {
 
         public void run() {
             try {
-                RequestBody<RemoteControlTaglib> requestBody = new RequestBody<RemoteControlTaglib>(RemoteControlTaglib.GET_FRAME);
-                FrameBody frameBody = (FrameBody) anInterface.clientToClientRequest(remoteAgentId, requestBody, 10000);
+
+                FrameBody frameBody = connection.getRemoteFrame();
 
                 updateRemoteScreenImage(frameBody);
 
@@ -205,7 +207,25 @@ public class RemoteControlController {
                 }
             }
 
-            showingImage.getPixelWriter().setPixels(0, 0, currentScreenW, currentScreenH, tempImage.getPixelReader(), 0, 0);
+            PixelWriter showingImagePixelWriter = showingImage.getPixelWriter();
+
+            showingImagePixelWriter.setPixels(0, 0, currentScreenW, currentScreenH, tempImage.getPixelReader(), 0, 0);
+
+            //TODO: add remote cursor drawing
+
+//            int cursorPosX = (remoteFrameBody.getPointerX() + 5 < currentScreenW) ? remoteFrameBody.getPointerX() : currentScreenW - 6;
+//            int cursorPosY = (remoteFrameBody.getPointerY() + 5 < currentScreenH) ? remoteFrameBody.getPointerY() : currentScreenH - 6;
+//
+//            showingImagePixelWriter.setPixels(
+//                    cursorPosX,
+//                    cursorPosY,
+//                    cursorPosX + 5,
+//                    cursorPosY + 5,
+//                    remoteCursor.getPixelReader(),
+//                    0,
+//                    0
+//            );
+
         }
 
         private int getPixelFromReceivedBuffer(int x, int y) {
@@ -240,12 +260,8 @@ public class RemoteControlController {
             }
 
             if (actionsToSend.size() > 0) {
-                System.out.println("sent: " + actionsToSend.size());
-
-                RCActionBody rcActionBody = new RCActionBody(actionsToSend);
-
                 try {
-                    anInterface.clientToClientRequest(remoteAgentId, rcActionBody);
+                    connection.sendControlActions(actionsToSend);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -270,7 +286,8 @@ public class RemoteControlController {
                 pendingEvents.addLast(new MouseDrag(xPos, yPos));
             }
 
-            if (mouseEvent.getEventType().equals(MouseEvent.MOUSE_PRESSED)) {
+            if (mouseEvent.getEventType().equals(MouseEvent.MOUSE_PRESSED) ||
+                    mouseEvent.getEventType().equals(MouseEvent.DRAG_DETECTED)) {
                 byte mouseButton = -1;
 
                 switch (mouseEvent.getButton()) {

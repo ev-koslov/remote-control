@@ -30,6 +30,7 @@ public class ClientApplication extends Application {
         executorService = Executors.newScheduledThreadPool(4);
 
         SceneControllerPair<MainWindowController> pair = FXUtils.loadPair("/fxml/main.fxml");
+
         pair.getController().init(remoteControlClientInterface);
 
         executorService.scheduleWithFixedDelay(
