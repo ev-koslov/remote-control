@@ -8,15 +8,12 @@ import java.awt.event.InputEvent;
 import java.util.*;
 
 
-/**
- * Created by voron on 29.06.2016.
- */
 public class Clicker {
-    private final static HashSet<Integer> pressedButtons, pressedMouseButtons;
+    private final static Set<Integer> pressedButtons, pressedMouseButtons;
 
     static {
-        pressedButtons = new HashSet<Integer>();
-        pressedMouseButtons = new HashSet<Integer>();
+        pressedButtons = Collections.synchronizedSet(new HashSet<Integer>());
+        pressedMouseButtons = Collections.synchronizedSet(new HashSet<Integer>());
     }
 
     private Robot robot;
@@ -31,8 +28,8 @@ public class Clicker {
         }
     }
 
-    public synchronized void doAction(RCAction action) {
-        if (action instanceof MouseMove || action instanceof MouseDrag) {
+    public void doAction(RCAction action) {
+        if (action.getClass().equals(MouseMove.class) || action.getClass().equals(MouseDrag.class)) {
             makeMouseMove((MouseMove) action);
         }
         if (action instanceof MousePress) {

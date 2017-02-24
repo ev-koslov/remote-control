@@ -1,9 +1,13 @@
-package ev.koslov.remote_control.agent.components;
+package ev.koslov.remote_control.agent.request_processors;
 
 import ev.koslov.data_exchanging.components.Message;
 import ev.koslov.data_exchanging.components.RequestBody;
+import ev.koslov.data_exchanging.components.ResponseBody;
+import ev.koslov.data_exchanging.components.tags.StatusTag;
 import ev.koslov.data_exchanging.module.AbstractClientRequestProcessor;
 import ev.koslov.remote_control.agent.AgentRemoteControlInterface;
+import ev.koslov.remote_control.agent.components.Clicker;
+import ev.koslov.remote_control.agent.components.Streamer;
 import ev.koslov.remote_control.common.actions.RCAction;
 import ev.koslov.remote_control.common.bodies.FrameBody;
 import ev.koslov.remote_control.common.bodies.RCActionBody;
@@ -14,20 +18,13 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
-/**
- * Created by voron on 23.02.2017.
- */
 public class RemoteControlRequestProcessor extends AbstractClientRequestProcessor<RemoteControlTaglib, AgentRemoteControlInterface> {
-    private Streamer streamer;
+    private Map<Long, Streamer> streamers;
     private Clicker clicker;
 
-    {
-        try {
-            streamer = new Streamer();
-            clicker = new Clicker();
-        } catch (AWTException e) {
-            e.printStackTrace();
-        }
+    public RemoteControlRequestProcessor() {
+        streamers = new HashMap<Long, Streamer>();
+        clicker = new Clicker();
     }
 
     @Override
@@ -37,21 +34,44 @@ public class RemoteControlRequestProcessor extends AbstractClientRequestProcesso
 
     @Override
     protected synchronized void process(Message.Header requestHeader, RequestBody<RemoteControlTaglib> body) {
-        switch (body.getCommand()){
+        switch (body.getCommand()) {
 
             case START_RC: {
-                
+                try {
+                    streamers.put((Long) body.getProperty("clientId"), new Streamer());
+                    getAssociatedClient().response(requestHeader, StatusTag.OK);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 break;
             }
 
             case STOP_RC: {
-                clicker.stop();
+                try {
+                    Long clientId = body.getProperty("clientId");
+                    streamers.remove(clientId);
+                    clicker.stop();
+                    getAssociatedClient().response(requestHeader, StatusTag.OK);
+
+                    System.out.println("Client disconnected: "+body.getProperty("clientId"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 break;
             }
 
             case GET_FRAME: {
                 try {
-                    FrameBody frameBody = new FrameBody(streamer.getScreenW(), streamer.getScreenH(), streamer.nextFrame());
+                    Streamer streamer = streamers.get(requestHeader.getSourceId());
+
+                    FrameBody frameBody = new FrameBody(
+                            streamer.getScreenW(),
+                            streamer.getScreenH(),
+                            streamer.getPointerX(),
+                            streamer.getPointerY(),
+                            streamer.nextFrame()
+                    );
+
                     getAssociatedClient().response(requestHeader, frameBody);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -65,7 +85,7 @@ public class RemoteControlRequestProcessor extends AbstractClientRequestProcesso
                 for (RCAction action : actions) {
                     try {
                         clicker.doAction(action);
-                    } catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }

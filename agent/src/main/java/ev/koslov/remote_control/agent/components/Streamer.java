@@ -7,17 +7,33 @@ import java.awt.image.DataBufferInt;
 
 
 public class Streamer {
-    private static final int TRANSPARENT_MASK = (0 << 24) | (0 << 16) | (0 << 8) | 0;
+    private static final int TRANSPARENT_MASK = 0;
+    private static Robot robot;
+    private static Toolkit toolkit;
+
+    static {
+        try {
+            robot = new Robot();
+            toolkit = Toolkit.getDefaultToolkit();
+        } catch (AWTException e) {
+            e.printStackTrace();
+        }
+    }
 
     private BufferedImage previousImage, actualImage, deltaImage;
-    private Robot robot;
-    private Toolkit toolkit;
+
     private Rectangle screenSize;
 
-    public Streamer() throws AWTException {
-        robot = new Robot();
-        toolkit = Toolkit.getDefaultToolkit();
+    public Streamer() {
         screenSize = new Rectangle(toolkit.getScreenSize());
+    }
+
+    public int getPointerX(){
+        return MouseInfo.getPointerInfo().getLocation().x;
+    }
+
+    public int getPointerY(){
+        return MouseInfo.getPointerInfo().getLocation().y;
     }
 
     public int getScreenW() {
@@ -68,23 +84,4 @@ public class Streamer {
 
         return deltaImageData;
     }
-
-
-//    private void addStatData(RemoteStreamingPacket streamingPacket) {
-//        traffic += streamingPacket.getCompressedData().length;
-//        running = System.currentTimeMillis() - startTime;
-//        frames++;
-//    }
-//
-//    private String getStatString() {
-//        StringBuilder sb = new StringBuilder();
-//        sb.append("Total frame sent: ");
-//        sb.append(frames);
-//        sb.append(". Traffic = ");
-//        sb.append(traffic / 1024);
-//        sb.append(" kB. Running: ");
-//        sb.append(running / 1000);
-//        sb.append(" s.");
-//        return sb.toString();
-//    }
 }

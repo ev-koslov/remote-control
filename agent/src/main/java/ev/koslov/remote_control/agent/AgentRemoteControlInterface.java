@@ -3,15 +3,12 @@ package ev.koslov.remote_control.agent;
 import ev.koslov.data_exchanging.components.RequestBody;
 import ev.koslov.data_exchanging.module.Client;
 import ev.koslov.data_exchanging.module.ClientInterfaceAutoSorting;
-import ev.koslov.remote_control.agent.components.RemoteControlRequestProcessor;
+import ev.koslov.remote_control.agent.request_processors.RemoteControlRequestProcessor;
 import ev.koslov.remote_control.common.taglib.ServerTaglib;
 
 import java.io.IOException;
 import java.net.InetAddress;
 
-/**
- * Created by voron on 22.02.2017.
- */
 public class AgentRemoteControlInterface extends ClientInterfaceAutoSorting{
 
     @Override
