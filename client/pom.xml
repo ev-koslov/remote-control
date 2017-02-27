@@ -2,6 +2,22 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <repositories>
+        <repository>
+            <id>lib</id>
+            <name>lib</name>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <url>file://${project.basedir}/lib</url>
+        </repository>
+    </repositories>
+
     <parent>
         <artifactId>ev.koslov.remote-control</artifactId>
         <groupId>ev.koslov.remote-control</groupId>
@@ -11,6 +27,12 @@
 
     <artifactId>client</artifactId>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -22,9 +44,7 @@
         <dependency>
             <groupId>com.oracle</groupId>
             <artifactId>javaFX</artifactId>
-            <version>2.2</version>
-            <scope>system</scope>
-            <systemPath>${java.home}\lib\jfxrt.jar</systemPath>
+            <version>2.0</version>
         </dependency>
 
     </dependencies>
